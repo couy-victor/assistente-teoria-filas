@@ -127,8 +127,8 @@ def initialize_session_state():
         ]
 
     if "milanesa_agent" not in st.session_state:
-        from agents.bosquinho_agent import BosquinhoAgent
-        st.session_state.milanesa_agent = BosquinhoAgent()
+        from agents.milanesa_agent import MilanesaAgent
+        st.session_state.milanesa_agent = MilanesaAgent()
 
 
 def display_chat_messages():

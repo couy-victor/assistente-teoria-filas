@@ -1,8 +1,16 @@
 """
-🌳 Bosquinho - Assistente Especializado em Teoria das Filas M/M/1
+🍖 Milanesa - Assistente Especializada em Teoria das Filas M/M/1
 
 Interface principal do sistema usando Streamlit
 """
+
+import warnings
+import os
+
+# Suprime warnings desnecessários
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import streamlit as st
 from utils.streamlit_helpers import (
@@ -16,8 +24,8 @@ from utils.streamlit_helpers import (
 
 # Configuração da página
 st.set_page_config(
-    page_title="🌳 Bosquinho - Assistente M/M/1",
-    page_icon="🌳",
+    page_title="Milanesa - Assistente M/M/1",
+    page_icon="📚",
     layout="wide"
 )
 

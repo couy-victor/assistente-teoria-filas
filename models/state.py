@@ -1,5 +1,5 @@
 """
-Definições de estado e tipos de dados para o sistema Bosquinho
+Definições de estado e tipos de dados para o sistema Milanesa
 """
 
 from typing import Dict, Any, List, Optional, TypedDict
@@ -7,8 +7,8 @@ from typing_extensions import Annotated
 from langgraph.graph.message import add_messages
 
 
-class BosquinhoState(TypedDict):
-    """Estado do grafo LangGraph para o assistente Bosquinho"""
+class MilanesaState(TypedDict):
+    """Estado do grafo LangGraph para a assistente Milanesa"""
     messages: Annotated[List[Dict], add_messages]
     lambda_rate: Optional[float]
     mu_rate: Optional[float]
@@ -25,7 +25,7 @@ class CalculationResult:
         self.description = description
         self.calc_type = calc_type
         self.metadata = kwargs
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "value": self.value,
@@ -44,7 +44,7 @@ class MM1Parameters:
         self.k = k
         self.rho = lambda_rate / mu_rate if mu_rate > 0 else float('inf')
         self.is_stable = self.rho < 1
-    
+
     def validate(self) -> Optional[str]:
         """Valida os parâmetros"""
         if self.lambda_rate < 0:

@@ -1,10 +1,10 @@
 """
-Agente principal Bosquinho - Especialista em Teoria das Filas M/M/1
+Agente principal Milanesa - Especialista em Teoria das Filas M/M/1
 VERSÃO UNIVERSAL: A IA resolve QUALQUER problema
 """
 
 from langgraph.graph import StateGraph, END
-from models.state import BosquinhoState
+from models.state import MilanesaState
 from agents.nodes import (
     extract_parameters,
     identify_calculation_type,
@@ -13,15 +13,15 @@ from agents.nodes import (
 )
 
 
-class BosquinhoAgent:
+class MilanesaAgent:
     """Agente especializado em M/M/1 - IA resolve qualquer problema"""
 
     def __init__(self):
         self.graph = self._create_graph()
 
     def _create_graph(self) -> StateGraph:
-        """Cria o grafo do assistente Bosquinho"""
-        workflow = StateGraph(BosquinhoState)
+        """Cria o grafo da assistente Milanesa"""
+        workflow = StateGraph(MilanesaState)
 
         # Adiciona os nós
         workflow.add_node("extract_parameters", extract_parameters)
@@ -65,13 +65,13 @@ class BosquinhoAgent:
                 messages.append({"role": "assistant", "content": response})
                 return {"messages": messages}
             except:
-                error_response = f"🌳 **Bosquinho aqui!** Desculpe, tive um problema: {str(e)}"
+                error_response = f"🍖 **Milanesa aqui!** Desculpe, tive um problema: {str(e)}"
                 messages.append({"role": "assistant", "content": error_response})
                 return {"messages": messages}
 
     def get_welcome_message(self) -> str:
         """Retorna a mensagem de boas-vindas"""
-        return """🌳 **Olá! Sou o Bosquinho, seu assistente especializado em Teoria das Filas M/M/1!**
+        return """🍖 **Olá! Sou a Milanesa, sua assistente especializada em Teoria das Filas M/M/1!**
 
 🧠 **Posso resolver QUALQUER problema de fila M/M/1:**
 
