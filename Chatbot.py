@@ -1,5 +1,5 @@
 """
-🌳 Bosquinho - Assistente Especializado em Teoria das Filas M/M/1
+📚 - Assistente Especializado em Teoria das Filas
 
 Interface principal do sistema usando Streamlit
 """
@@ -16,8 +16,8 @@ from utils.streamlit_helpers import (
 
 # Configuração da página
 st.set_page_config(
-    page_title="🌳 Bosquinho - Assistente M/M/1",
-    page_icon="🌳",
+    page_title="📚 - Assistente M/M/1",
+    page_icon="",
     layout="wide"
 )
 
