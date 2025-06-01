@@ -13,34 +13,89 @@ load_dotenv()
 
 
 class GroqClient:
-    """Cliente para interação com Groq API - VERSÃO COM CONTEXTO"""
+    """Cliente para interação com Groq API - VERSÃO COM CONTEXTO MELHORADO"""
 
     def __init__(self):
-        self.api_key = os.getenv("GROQ_API_KEY")
-        if not self.api_key:
-            raise ValueError("GROQ_API_KEY não encontrada no arquivo .env")
+        """Inicializa o cliente Groq com validação robusta"""
+        self._load_and_validate_config()
+        self._initialize_groq_client()
+        self._validate_api_connection()
 
-        self.client = Groq(api_key=self.api_key)
+    def _load_and_validate_config(self):
+        """Carrega e valida configurações do ambiente"""
+        self.api_key = os.getenv("GROQ_API_KEY")
+
+        if not self.api_key:
+            raise ValueError("❌ GROQ_API_KEY não encontrada no arquivo .env")
+
+        if self.api_key == "SUA_NOVA_CHAVE_AQUI":
+            raise ValueError("❌ Você precisa substituir 'SUA_NOVA_CHAVE_AQUI' pela sua API key real do Groq.\n"
+                           "Acesse https://console.groq.com/keys para obter uma chave válida.")
+
+        if not self.api_key.startswith("gsk_"):
+            print(f"⚠️ WARNING - API Key não parece ter formato válido (deve começar com 'gsk_')")
+            print(f"⚠️ WARNING - Sua chave atual: {self.api_key[:10]}...")
+            print(f"⚠️ WARNING - Acesse https://console.groq.com/keys para obter uma chave válida")
+
         self.model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
-        
-        # Tratamento seguro das variáveis numéricas
+
+        # Validação e carregamento seguro da temperatura
+        self.temperature = self._safe_load_float("GROQ_TEMPERATURE", 0.1, 0.0, 2.0)
+
+        # Validação e carregamento seguro dos tokens
+        self.max_tokens = self._safe_load_int("GROQ_MAX_TOKENS", 2000, 100, 4000)
+
+        print(f"✅ CONFIG - Model: {self.model}")
+        print(f"✅ CONFIG - Temperature: {self.temperature}")
+        print(f"✅ CONFIG - Max tokens: {self.max_tokens}")
+
+    def _safe_load_float(self, env_var: str, default: float, min_val: float, max_val: float) -> float:
+        """Carrega float do ambiente com validação"""
         try:
-            temp_str = os.getenv("GROQ_TEMPERATURE", "0.1")
-            temp_clean = ''.join(c for c in temp_str if c.isdigit() or c == '.')
-            self.temperature = float(temp_clean) if temp_clean else 0.1
-            print(f"✅ DEBUG - Temperature carregada: {self.temperature}")
+            value_str = os.getenv(env_var, str(default))
+            value_clean = ''.join(c for c in value_str if c.isdigit() or c == '.')
+            value = float(value_clean) if value_clean else default
+            return max(min_val, min(max_val, value))
         except (ValueError, TypeError) as e:
-            print(f"⚠️ DEBUG - Erro ao carregar GROQ_TEMPERATURE: {e}, usando 0.1")
-            self.temperature = 0.1
-        
+            print(f"⚠️ CONFIG - Erro ao carregar {env_var}: {e}, usando {default}")
+            return default
+
+    def _safe_load_int(self, env_var: str, default: int, min_val: int, max_val: int) -> int:
+        """Carrega int do ambiente com validação"""
         try:
-            tokens_str = os.getenv("GROQ_MAX_TOKENS", "2000")
-            tokens_clean = ''.join(c for c in tokens_str if c.isdigit())
-            self.max_tokens = int(tokens_clean) if tokens_clean else 2000
-            print(f"✅ DEBUG - Max tokens carregado: {self.max_tokens}")
+            value_str = os.getenv(env_var, str(default))
+            value_clean = ''.join(c for c in value_str if c.isdigit())
+            value = int(value_clean) if value_clean else default
+            return max(min_val, min(max_val, value))
         except (ValueError, TypeError) as e:
-            print(f"⚠️ DEBUG - Erro ao carregar GROQ_MAX_TOKENS: {e}, usando 2000")
-            self.max_tokens = 2000
+            print(f"⚠️ CONFIG - Erro ao carregar {env_var}: {e}, usando {default}")
+            return default
+
+    def _initialize_groq_client(self):
+        """Inicializa o cliente Groq"""
+        try:
+            self.client = Groq(api_key=self.api_key)
+            print("✅ CLIENT - Cliente Groq inicializado")
+        except Exception as e:
+            print(f"❌ CLIENT - Erro ao inicializar cliente Groq: {e}")
+            raise
+
+    def _validate_api_connection(self):
+        """Valida conexão com a API Groq"""
+        try:
+            # Teste simples para validar a API key
+            test_response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": "test"}],
+                max_tokens=1,
+                temperature=0.1
+            )
+            print("✅ API - Conexão validada com sucesso")
+        except Exception as e:
+            print(f"❌ API - Erro na validação: {e}")
+            if "401" in str(e) or "invalid_api_key" in str(e).lower():
+                raise ValueError(f"API Key inválida. Verifique sua GROQ_API_KEY no arquivo .env")
+            raise
 
     def answer_followup_question(self, current_question: str, context: str) -> str:
         """
@@ -281,6 +336,24 @@ Resolva o problema completamente mantendo contexto e consistência!"""
 
         except Exception as e:
             print(f"❌ DEBUG - Erro em solve_any_mm1_problem: {e}")
+
+            # Tratamento específico para erro de API key
+            if "401" in str(e) or "invalid_api_key" in str(e).lower():
+                return f"""🍖 **Milanesa aqui!**
+
+❌ **Problema com API Key:** Sua chave do Groq está inválida ou expirada.
+
+🔧 **Como resolver:**
+1. Acesse: https://console.groq.com/keys
+2. Faça login ou crie uma conta gratuita
+3. Clique em "Create API Key"
+4. Copie a nova chave
+5. Substitua no arquivo .env: `GROQ_API_KEY=sua_nova_chave`
+
+💡 **Nota:** A chave deve começar com "gsk_" e ter cerca de 50+ caracteres.
+"""
+
+            # Outros erros
             return f"""🍖 **Milanesa aqui!**
 
 Tive um problema técnico ao resolver o problema: {str(e)}
